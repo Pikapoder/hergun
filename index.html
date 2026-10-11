@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Günün Sürprizi 💌</title>
+<style>
+  :root{
+    --pink:#ffc0cb; --deep:#be1a25; --card:#fff5f6; --ink:#2b2b2b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --card:#241417; --ink:#f5e9ea; }
+  }
+  :root[data-theme="dark"]{ --card:#241417; --ink:#f5e9ea; }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:linear-gradient(160deg,var(--pink),#ff8fa3);
+    font-family:-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink);
+    padding:env(safe-area-inset-top,0px) 1rem env(safe-area-inset-bottom,0px);
+    display:flex; flex-direction:column; align-items:center; min-height:100%;
+    width:100%; overflow-x:hidden;
+  }
+  h1{font-size:1.5rem; line-height:1.3; margin:1.4rem 0 .4rem; text-align:center;}
+  p.sub{opacity:.8; margin:0 0 1.3rem; text-align:center; font-size:.95rem;}
+  .card{
+    background:var(--card); border-radius:18px; box-shadow:0 8px 24px rgba(0,0,0,.15);
+    padding:1.6rem 1.2rem; width:100%; max-width:440px; text-align:center; margin-bottom:1.5rem;
+  }
+  #revealBtn{
+    background:var(--deep); color:#fff; border:none; border-radius:999px;
+    padding:1rem 1.8rem; font-size:1.05rem; font-weight:600; cursor:pointer;
+    box-shadow:0 4px 10px rgba(190,26,37,.4); width:100%; max-width:300px;
+  }
+  #revealBtn:active{transform:scale(.96);}
+  #message{
+    font-size:1.1rem; line-height:1.6; margin-top:1.1rem; opacity:0; transition:opacity .5s;
+  }
+  #message.show{opacity:1;}
+  .game-wrap{width:100%; max-width:440px; padding-bottom:1rem;}
+  canvas{
+    width:100%; display:block; border-radius:14px; touch-action:none;
+    box-shadow:0 8px 24px rgba(0,0,0,.15);
+  }
+  .hud{
+    display:flex; justify-content:space-between; width:100%; margin:.7rem 0; font-weight:600; font-size:1.05rem;
+  }
+  #basketSlider{
+    -webkit-appearance:none; appearance:none; width:100%; height:10px; margin-top:.8rem;
+    border-radius:999px; background:linear-gradient(90deg,#ffd0d8,#ff8fa3);
+    outline:none; touch-action:pan-y;
+  }
+  #basketSlider::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:34px; height:34px; border-radius:50%;
+    background:var(--deep); border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.3); cursor:pointer;
+  }
+  #basketSlider::-moz-range-thumb{
+    width:34px; height:34px; border-radius:50%; background:var(--deep);
+    border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.3); cursor:pointer;
+  }
+  .footer{
+    width:100%; max-width:440px; margin:1.4rem 0 1.8rem; text-align:center; line-height:1.3;
+  }
+  .footer-text{
+    display:inline-block; font-size:1.9rem;
+    font-family:'Segoe Script','Brush Script MT','Snell Roundhand','Apple Chancery',cursive;
+    background:linear-gradient(90deg,#e0115f,#be1a25);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    -webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 2px 6px rgba(190,26,37,.3));
+  }
+  .footer-heart{
+    display:inline-block; font-size:1.7rem; margin-left:.25rem;
+    transform-origin:center; animation:nameBeat 2.6s ease-out infinite;
+  }
+
+  .secret-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center;
+    justify-content:center; padding:1.2rem; z-index:10; opacity:0; pointer-events:none;
+    transition:opacity .3s;
+  }
+  .secret-overlay.show{ opacity:1; pointer-events:auto; }
+  .secret-card{
+    background:var(--card); border-radius:18px; padding:1.8rem 1.4rem; max-width:360px;
+    text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.35);
+    transform:scale(.9); transition:transform .3s;
+  }
+  .secret-overlay.show .secret-card{ transform:scale(1); }
+  .secret-emoji{ font-size:2.2rem; margin-bottom:.6rem; }
+  .secret-card p{ font-size:1.05rem; line-height:1.6; margin:0 0 1.2rem; }
+  #secretClose{
+    background:var(--deep); color:#fff; border:none; border-radius:999px;
+    padding:.7rem 1.6rem; font-weight:600; cursor:pointer;
+  }
+
+  #bgHearts{
+    position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0;
+  }
+  #bgHearts span{
+    position:absolute; top:-10%; opacity:.6;
+    animation-timing-function:linear; animation-iteration-count:infinite;
+    will-change:transform;
+  }
+  @keyframes fall1{
+    0%   { transform:translate(0,0) rotate(-8deg); }
+    25%  { transform:translate(18px,30vh) rotate(6deg); }
+    50%  { transform:translate(-14px,60vh) rotate(-6deg); }
+    75%  { transform:translate(12px,90vh) rotate(8deg); }
+    100% { transform:translate(0,115vh) rotate(-4deg); }
+  }
+  @keyframes fall2{
+    0%   { transform:translate(0,0) rotate(5deg); }
+    25%  { transform:translate(-22px,28vh) rotate(-10deg); }
+    50%  { transform:translate(16px,58vh) rotate(8deg); }
+    75%  { transform:translate(-18px,88vh) rotate(-6deg); }
+    100% { transform:translate(0,115vh) rotate(4deg); }
+  }
+  h1,p.sub,.card,.game-wrap,.footer,.pulse-wrap{ position:relative; z-index:1; }
+
+  .pulse-wrap{
+    width:100%; max-width:440px; margin:1.8rem 0 1.4rem; text-align:center;
+  }
+  .ecg{ width:100%; height:80px; display:block; overflow:visible; }
+  .ecg path{
+    fill:none; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke;
+  }
+  .ecg-base{ stroke:rgba(190,26,37,.25); stroke-width:2; }
+  .ecg-glow{
+    stroke:#be1a25; stroke-width:3.2;
+    stroke-dasharray:90 510;
+    filter:drop-shadow(0 0 5px rgba(224,17,95,.9));
+    animation:ecgSweep 2.6s linear infinite;
+  }
+  @keyframes ecgSweep{
+    from{ stroke-dashoffset:90; }
+    to{ stroke-dashoffset:-510; }
+  }
+  .pulse-name{
+    display:inline-block; margin-top:.1rem; font-size:2.6rem; line-height:1.1;
+    font-family:'Segoe Script','Brush Script MT','Snell Roundhand','Apple Chancery',cursive;
+    background:linear-gradient(90deg,#e0115f,#be1a25);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    -webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 2px 6px rgba(190,26,37,.35));
+    transform-origin:center; animation:nameBeat 2.6s ease-out infinite;
+  }
+  @keyframes nameBeat{
+    0%,20%{ transform:scale(1); }
+    24%{ transform:scale(1.18); }
+    31%{ transform:scale(1); }
+    70%{ transform:scale(1); }
+    74%{ transform:scale(1.18); }
+    81%,100%{ transform:scale(1); }
+  }
+</style>
+</head>
+<body>
+
+  <div id="bgHearts"></div>
+
+
+  <div class="pulse-wrap">
+    <svg class="ecg" viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true">
+      <path class="ecg-base" pathLength="600" d="M0,48 L40,48 L50,48 L56,40 L62,48 L80,48 L86,54 L92,8 L98,72 L104,48 L130,48 L138,38 L148,48 L200,48 L240,48 L250,48 L256,40 L262,48 L280,48 L286,54 L292,8 L298,72 L304,48 L330,48 L338,38 L348,48 L400,48"/>
+      <path class="ecg-glow" pathLength="600" d="M0,48 L40,48 L50,48 L56,40 L62,48 L80,48 L86,54 L92,8 L98,72 L104,48 L130,48 L138,38 L148,48 L200,48 L240,48 L250,48 L256,40 L262,48 L280,48 L286,54 L292,8 L298,72 L304,48 L330,48 L338,38 L348,48 L400,48"/>
+    </svg>
+    <div class="pulse-name">Rabiam</div>
+  </div>
+
+  <div class="card">
+    <button id="revealBtn">Hadi aç bakalım 🎁</button>
+    <div id="message"></div>
+  </div>
+
+  <div class="game-wrap">
+    <div class="hud">
+      <span>Skor: <span id="score">0</span></span>
+      <span>En İyi: <span id="best">0</span></span>
+    </div>
+    <canvas id="game" height="420"></canvas>
+    <input type="range" id="basketSlider" min="0" max="100" value="50">
+  </div>
+
+  <div id="secretOverlay" class="secret-overlay">
+    <div class="secret-card">
+      <div class="secret-emoji">🎉💖</div>
+      <p id="secretText"></p>
+      <button id="secretClose">Kapat</button>
+    </div>
+  </div>
+
+  <div class="footer"><span class="footer-text">Seni çok seviyorum</span></div>
+
+<script>
+// ---------- Arka Plan Kalpleri ----------
+(function(){
+  const container = document.getElementById('bgHearts');
+  const glyphs = ['❤️','💗','💕','💖','💘'];
+  const count = 22;
+  for(let i=0;i<count;i++){
+    const s = document.createElement('span');
+    s.textContent = glyphs[Math.floor(Math.random()*glyphs.length)];
+    const depth = Math.random(); // 0 = far/small/blurry, 1 = near/big/sharp
+    const size = 0.7 + depth*1.5;
+    s.style.left = Math.random()*100 + 'vw';
+    s.style.fontSize = size + 'rem';
+    s.style.opacity = (0.35 + depth*0.5).toFixed(2);
+    s.style.filter = 'blur(' + ((1-depth)*1.6).toFixed(2) + 'px)';
+    s.style.animationName = Math.random() < 0.5 ? 'fall1' : 'fall2';
+    s.style.animationDuration = (14 - depth*6 + Math.random()*4) + 's';
+    s.style.animationDelay = (-Math.random()*20) + 's';
+    container.appendChild(s);
+  }
+})();
+
+// ---------- Günün Sözü ----------
+const messages = [
+"Gözlerin her sabah güne başlamam için yeterli bir sebep",
+"Senin gülüşün en güzel hatırladığım şey",
+"Bugün de seni düşünerek gülümsedim",
+"Yanımda olman her şeyi daha hafif yapıyor",
+"Seninle geçen her an biriktirdiğim bir hazine",
+"Bugün sana sarılmak isterdim uzaktan da olsa yolluyorum",
+"Kalbimdeki yerin hiç değişmedi büyüdü sadece",
+"Seni sevmek en kolay kararımdı",
+"Bugün hava nasıl olursa olsun sen güneşimsin",
+"Seninle planladığım her şey daha anlamlı geliyor",
+"Uzak da olsak kalbim hep senin yanında",
+"Bugün kendine iyi bak ben seni düşünüyorum",
+"Seninle büyüyen bu hikâyeyi çok seviyorum",
+"En sevdiğim haber: seni seviyorum",
+"Bugün de seninle aynı gökyüzünün altındayım",
+"Senin mutluluğun benim en büyük motivasyonum",
+"Bugün biraz daha yorulsan da aklında hep bir gülümseme olsun",
+"Seni her gün biraz daha çok seviyorum",
+"Yüzündeki gülümseme günümün en güzel parçası",
+"Sana söylemek istediğim çok şey var ama en basiti: seni seviyorum",
+"Seninle sessizlik bile anlamlı geliyor",
+"Bugün yorulursan benim sana sarılmayı hayal ettiğimi bil",
+"En sevdiğim yer senin yanın",
+"Gülüşünü hayal etmek bile günümü güzelleştiriyor",
+"Seninle her sıradan gün özel oluyor",
+"Bugün de aklımdan hiç çıkmadın",
+"Sana her gün yeniden âşık oluyorum",
+"Uzaklık sadece bir sayı kalbim hep yanında",
+"Seninle kurduğum hayaller en sevdiğim şey",
+"Bugün kendine güvenerek devam et arkandayım",
+"Seninle paylaştığım küçük anlar en büyük hazinem",
+"Bu gün de seni biraz daha özledim",
+"Senin huzurun benim de huzurum",
+"Bugün yorgun olsan da bitince beni düşün gülümse",
+"Sana sarılmayı o kadar çok istiyorum ki",
+"Seninle geçirdiğim zaman hiç yetmiyor",
+"Bugün de kalbimde taşıdığım tek isim senin",
+"Seninle her şey daha renkli",
+"Küçük bir hatırlatma: bugün de seni seviyorum",
+"Aklımda hep sen varsın nerede olursam olayım",
+"Sana güvenmek en doğru kararlarımdan biri",
+"Seninle büyüttüğümüz bu sevgi her geçen gün daha da güzelleşiyor",
+"Bugün biraz yoruluyorsan bil ki gurur duyuyorum seninle",
+"Seni düşünmek bile içimi ısıtıyor",
+"Bugün de aynı hayali kuruyorum: yanımda olman",
+"Senin gülüşün en sevdiğim melodi",
+"Her sabah seni düşünerek uyanmak istiyorum",
+"Bugün kendine değer ver ben zaten veriyorum",
+"Seninle ilgili en sevdiğim şey hep aynı kalman: iyi sıcak sen",
+"Bu hayatta en şanslı olduğum şey seni tanımak",
+"Bugün de seni övünerek anlatıyorum herkese",
+"Sana her gün yeni bir sebep buluyorum seni sevmek için",
+"Seninle konuşmak günümün en güzel parçası",
+"Bugün yorgunsan dinlen ben seninle gurur duyuyorum",
+"Seni düşünmeden geçen bir saatim bile yok",
+"Bugün de yanında olmak isterdim",
+"Sana sarılmak en sevdiğim şeylerden biri",
+"Seninle her anı yeniden yaşamak isterim",
+"Bugün de kalbim seninle attı",
+"Sen varken her şey daha kolay geliyor",
+"Seninle paylaştığım sessizlikler bile değerli",
+"Bugün seni özledim yarın da özleyeceğim",
+"Sana bakmak bile beni mutlu ediyor",
+"Seninle geçirdiğim her an bir hediye",
+"Bugün de güne seni düşünerek başladım",
+"Senin varlığın bana güç veriyor",
+"Bugün kendine iyi davran hak ediyorsun",
+"Seninle her gün yeni bir hikâye yazıyoruz",
+"Aklımda hâlâ en son gülüşün var",
+"Bugün de seni sevdiğimi hatırlatmak istedim",
+"Seninle olan her anı özenle saklıyorum",
+"Bugün yorulsan da bil ki yanındayım uzakta olsam bile",
+"Senin mutluluğun benim de mutluluğum",
+"Bugün de kalbimin sahibisin",
+"Seninle paylaştığım hayaller büyümeye devam ediyor",
+"Bugün de seni düşünerek gülümsedim yine",
+"Sana sarılmayı hayal ederek güne başladım",
+"Seninle her konuşma beni biraz daha mutlu ediyor",
+"Bugün de aklımda hep sen vardın",
+"Senin sesin en sevdiğim ses",
+"Bugün de seni biraz daha çok sevdim",
+"Seninle büyüyen bu bağ beni şaşırtmaya devam ediyor",
+"Bugün yorulsan da unutma: ben buradayım",
+"Senin için bugün küçük bir gülümseme yolluyorum",
+"Seninle ilgili en sevdiğim şey: hep seni özlüyor olmam",
+"Bugün de kalbim seninle dolu",
+"Seninle paylaştığım her şey daha anlamlı geliyor",
+"Bugün de seni düşünmeden duramadım",
+"Senin gülüşün günümü kurtarıyor",
+"Bugün de seninle hayal kurmak istedim",
+"Seninle geçirdiğim zaman en değerli zamanım",
+"Bugün de seni sevdiğimi bir kez daha söylemek istedim",
+"Senin yanında olmak en sevdiğim yer",
+"Bugün de aklımda tek bir isim var: senin",
+"Seninle her şey daha güzel oluyor",
+"Bugün de seni düşünerek işe/okula başladım",
+"Senin mutluluğun için elimden geleni yapmak istiyorum",
+"Bugün de seni özledim bunu bilmeni istedim",
+"Seninle paylaştığım bu hikâye hiç bitmesin istiyorum"
+];
+function dayIndex(){
+  const now = new Date();
+  const key = now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate();
+  let hash = 0;
+  for(let i=0;i<key.length;i++){ hash = (hash*31 + key.charCodeAt(i)) >>> 0; }
+  return hash % messages.length;
+}
+const revealBtn = document.getElementById('revealBtn');
+const messageEl = document.getElementById('message');
+revealBtn.addEventListener('click', () => {
+  messageEl.textContent = messages[dayIndex()];
+  messageEl.classList.add('show');
+  revealBtn.disabled = true;
+  revealBtn.style.opacity = .6;
+});
+
+// ---------- Kalp Yakalama Oyunu ----------
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+function fitCanvas(){
+  const w = canvas.clientWidth;
+  canvas.width = w;
+}
+window.addEventListener('resize', fitCanvas);
+fitCanvas();
+
+let score = 0, best = 0;
+try { best = parseInt(localStorage.getItem('heartGameBest') || '0', 10) || 0; } catch(e){}
+document.getElementById('best').textContent = best;
+
+const secretTiers = [
+  { score: 10, message: "Buraya kadar oynadığına göre bil ki seni dünyalar kadar seviyorum 💖" },
+  { score: 20, message: "Bu skora ulaştın demek ki inatçısın tıpkı benim seni sevmekten vazgeçmediğim gibi 💘" },
+  { score: 30, message: "Sana gizli bir sır her gün biraz daha çok seviyorum seni 🤫💗" },
+  { score: 50, message: "Seni İkizler'de beklediğim o günkü hislerim hâlâ aklımda kalbimin atışı o kadar hızlıydı ki sanki yerinden çıkacaktı bir de seni çok uzaktan gördüğüm o an nerede duracağımı şaşırmıştım hislerim her geçen gün katlanarak artıyor 💓" }
+];
+let unlockedTiers = new Set();
+function checkSecretTiers(){
+  for(const tier of secretTiers){
+    if(score >= tier.score && !unlockedTiers.has(tier.score)){
+      unlockedTiers.add(tier.score);
+      showSecret(tier.message);
+      break;
+    }
+  }
+}
+function showSecret(message){
+  const el = document.getElementById('secretOverlay');
+  document.getElementById('secretText').textContent = message;
+  el.classList.add('show');
+  playTone(660,0.12,'sine',0.12);
+  setTimeout(() => playTone(990,0.15,'sine',0.1), 100);
+}
+
+let items = [];
+let basketX = 0;
+let running = true;
+let spawnTimer = 0;
+
+function resetBasket(){ basketX = canvas.width/2; }
+resetBasket();
+
+// ---------- Ses Efektleri ----------
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){}
+  } else if(audioCtx.state === 'suspended'){
+    audioCtx.resume();
+  }
+}
+function playTone(freq, duration, type, gainPeak){
+  if(!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(gainPeak || 0.15, audioCtx.currentTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+function playCatchSound(bad){
+  if(bad){
+    playTone(160, 0.18, 'sawtooth', 0.12);
+  } else {
+    playTone(880, 0.1, 'sine', 0.13);
+    setTimeout(() => playTone(1200, 0.12, 'sine', 0.1), 60);
+  }
+}
+['click','touchstart','input'].forEach(evt => document.addEventListener(evt, ensureAudio, {once:true}));
+
+const GOOD_COLOR = {light:'#ff6b89', dark:'#c4133a'};
+const BAD_COLOR = {light:'#8a8a8a', dark:'#4a4a4a'};
+
+function spawnItem(){
+  const bad = Math.random() < 0.3;
+  items.push({
+    x: Math.random()*(canvas.width-24)+12,
+    y: -20,
+    speed: 1.5 + Math.random()*2 + score*0.02,
+    bad: bad,
+    size: 16 + Math.random()*8,
+    rot: (Math.random()-0.5)*0.6,
+    spin: (Math.random()-0.5)*0.02
+  });
+}
+
+function drawHeart(x,y,size,color,rot,broken){
+  ctx.save();
+  ctx.translate(x,y);
+  if(rot) ctx.rotate(rot);
+  ctx.scale(size/20,size/20);
+  ctx.shadowColor = 'rgba(0,0,0,.25)';
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetY = 2;
+  const grad = ctx.createLinearGradient(-10,-4,10,20);
+  grad.addColorStop(0, color.light);
+  grad.addColorStop(1, color.dark);
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(0,4);
+  ctx.bezierCurveTo(0,-4,-10,-4,-10,4);
+  ctx.bezierCurveTo(-10,12,0,16,0,20);
+  ctx.bezierCurveTo(0,16,10,12,10,4);
+  ctx.bezierCurveTo(10,-4,0,-4,0,4);
+  ctx.fill();
+
+  if(broken){
+    ctx.shadowColor = 'transparent';
+    const gap = 1.3;
+    ctx.save();
+    ctx.translate(-gap,0);
+    ctx.beginPath();
+    ctx.moveTo(-3,-1);
+    ctx.lineTo(1,6);
+    ctx.lineTo(-2,9);
+    ctx.lineTo(2,14);
+    ctx.lineTo(0,20);
+    ctx.lineTo(-7,10);
+    ctx.lineTo(-4,8);
+    ctx.lineTo(-7,2);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.translate(gap,0);
+    ctx.strokeStyle = 'rgba(255,255,255,.85)';
+    ctx.lineWidth = 0.9;
+    ctx.beginPath();
+    ctx.moveTo(-3,-2);
+    ctx.lineTo(1,6);
+    ctx.lineTo(-2,9);
+    ctx.lineTo(2,14);
+    ctx.lineTo(0,21);
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function drawBasket(){
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,.2)';
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetY = 3;
+  const grad = ctx.createLinearGradient(0, canvas.height-22, 0, canvas.height);
+  grad.addColorStop(0, '#e0334a');
+  grad.addColorStop(1, '#8e0f1c');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(basketX-30, canvas.height-20);
+  ctx.lineTo(basketX+30, canvas.height-20);
+  ctx.lineTo(basketX+22, canvas.height-2);
+  ctx.lineTo(basketX-22, canvas.height-2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,.5)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(basketX-26, canvas.height-20);
+  ctx.lineTo(basketX+26, canvas.height-20);
+  ctx.stroke();
+  ctx.restore();
+}
+
+let particles = [];
+function burst(x,y,color){
+  for(let i=0;i<8;i++){
+    const angle = Math.random()*Math.PI*2;
+    const speed = 1 + Math.random()*2.5;
+    particles.push({
+      x, y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+      life:1, color
+    });
+  }
+}
+function updateParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life -= 0.04;
+    if(p.life <= 0){ particles.splice(i,1); continue; }
+    ctx.save();
+    ctx.globalAlpha = Math.max(p.life,0);
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2.5, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawBackground(){
+  const grad = ctx.createLinearGradient(0,0,0,canvas.height);
+  grad.addColorStop(0,'#fff0f2');
+  grad.addColorStop(1,'#ffd9e0');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate(-0.12);
+  const fontSize = Math.max(28, canvas.width*0.14);
+  ctx.font = '700 ' + fontSize + 'px -apple-system, Segoe UI, Roboto, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const textGrad = ctx.createLinearGradient(-canvas.width/2,0,canvas.width/2,0);
+  textGrad.addColorStop(0,'rgba(224,17,95,.22)');
+  textGrad.addColorStop(1,'rgba(190,26,37,.22)');
+  ctx.fillStyle = textGrad;
+  ctx.fillText('I LOVE YOU', 0, 0);
+  ctx.restore();
+}
+
+function update(){
+  if(!running) return;
+  drawBackground();
+
+  spawnTimer++;
+  if(spawnTimer > Math.max(25, 50-score)){ spawnItem(); spawnTimer = 0; }
+
+  for(let i=items.length-1;i>=0;i--){
+    const it = items[i];
+    it.y += it.speed;
+    it.rot += it.spin;
+    drawHeart(it.x, it.y, it.size, it.bad ? BAD_COLOR : GOOD_COLOR, it.rot, it.bad);
+
+    if(it.y > canvas.height-28 && it.y < canvas.height-4 && Math.abs(it.x-basketX) < 32){
+      items.splice(i,1);
+      playCatchSound(it.bad);
+      if(it.bad){
+        score = Math.max(0, score-2);
+        burst(it.x, it.y, '#6b6b6b');
+      } else {
+        score += 1;
+        burst(it.x, it.y, '#e0115f');
+      }
+      document.getElementById('score').textContent = score;
+      if(score > best){
+        best = score;
+        document.getElementById('best').textContent = best;
+        try { localStorage.setItem('heartGameBest', String(best)); } catch(e){}
+      }
+      checkSecretTiers();
+      continue;
+    }
+    if(it.y > canvas.height+20){ items.splice(i,1); }
+  }
+
+  updateParticles();
+  drawBasket();
+  requestAnimationFrame(update);
+}
+requestAnimationFrame(update);
+
+function moveBasket(clientX){
+  const rect = canvas.getBoundingClientRect();
+  basketX = Math.max(22, Math.min(canvas.width-22, clientX - rect.left));
+}
+canvas.addEventListener('mousemove', e => moveBasket(e.clientX));
+
+document.getElementById('secretClose').addEventListener('click', () => {
+  document.getElementById('secretOverlay').classList.remove('show');
+});
+
+const slider = document.getElementById('basketSlider');
+slider.addEventListener('input', () => {
+  const pct = slider.value / 100;
+  basketX = 22 + pct * (canvas.width - 44);
+});
+</script>
+</body>
+</html>
