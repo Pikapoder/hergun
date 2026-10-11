@@ -811,8 +811,19 @@ function finaleFrame(now){
   }
   finale.raf = requestAnimationFrame(finaleFrame);
 }
+function enterFullscreen(){
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+  if(req && !document.fullscreenElement && !document.webkitFullscreenElement){
+    try{
+      const p = req.call(el);
+      if(p && p.catch) p.catch(function(){});
+    }catch(e){}
+  }
+}
 function showFinale(){
   paused = true;
+  enterFullscreen();
   finale.ctx = finale.cvs.getContext('2d');
   finale.el.classList.add('show');
   finale.el.setAttribute('aria-hidden', 'false');
@@ -847,6 +858,7 @@ const outroSleep = function(ms){ return new Promise(function(r){ setTimeout(r, m
 async function startOutro(){
   if(startOutro.started) return;
   startOutro.started = true;
+  enterFullscreen();
   const o = document.getElementById('outro');
   const msg = document.getElementById('outroMsg');
   const beat = document.getElementById('outroBeat');
