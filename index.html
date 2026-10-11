@@ -104,6 +104,14 @@
   .finale-btn:active{ transform:scale(.96); }
 
   /* ---- kapanis dizisi ---- */
+  .outro-fs{
+    position:absolute; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + 22px);
+    transform:translateX(-50%); padding:.6rem 1.2rem; border-radius:999px;
+    background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.35);
+    font-family:inherit; font-size:.85rem; cursor:pointer;
+    opacity:0; pointer-events:none; transition:opacity .8s ease;
+  }
+  .outro-fs.on{ opacity:1; pointer-events:auto; }
   .outro{
     position:fixed; inset:0; z-index:30; background:#000; overflow:hidden;
     opacity:0; pointer-events:none; transition:opacity .8s ease;
@@ -276,6 +284,7 @@
       </svg>
     </div>
     <div id="outroMsg" class="outro-msg"></div>
+    <button id="fsBtn" class="outro-fs" type="button">Tam ekrana geç</button>
     <div id="outroEnd" class="outro-end">GAME COMPLETED ❤️ BUT MY LOVE FOR YOU IS ENDLESS.</div>
   </div>
 
@@ -816,7 +825,7 @@ function enterFullscreen(){
   const req = el.requestFullscreen || el.webkitRequestFullscreen;
   if(req && !document.fullscreenElement && !document.webkitFullscreenElement){
     try{
-      const p = req.call(el);
+      const p = req.call(el, { navigationUI: 'hide' });
       if(p && p.catch) p.catch(function(){});
     }catch(e){}
   }
@@ -883,12 +892,18 @@ async function startOutro(){
   finale.el.classList.remove('show');
   document.getElementById('bgHearts').style.display = 'none';
   await outroSleep(1200);
+  const fsBtn = document.getElementById('fsBtn');
+  fsBtn.addEventListener('click', function(){ enterFullscreen(); fsBtn.classList.remove('on'); });
+  const fsDoc = document.documentElement;
+  const fsOK = !!(fsDoc.requestFullscreen || fsDoc.webkitRequestFullscreen);
+  if(fsOK && !(document.fullscreenElement || document.webkitFullscreenElement)){ fsBtn.classList.add('on'); }
 
   // 2) iki cumle
   await say('Tebrikler Rabia. Oyunu bitirdin sanıyorsun…', 'light', 2800);
   await say('Ama sana olan sevgimin son seviyesi henüz keşfedilmedi.', 'light', 3400);
 
   // 3) kalp atisi baslar, arka plan yavasca pembelesir
+  document.getElementById('fsBtn').classList.remove('on');
   beat.classList.add('on');
   pink.classList.add('on');
   await outroSleep(7500);
