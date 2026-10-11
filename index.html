@@ -74,6 +74,72 @@
     transform-origin:center; animation:nameBeat 2.6s ease-out infinite;
   }
 
+  .finale-overlay{
+    position:fixed; inset:0; z-index:20; background:#12070b; overflow-y:auto;
+    -webkit-overflow-scrolling:touch; opacity:0; pointer-events:none; transition:opacity .6s;
+    padding:calc(env(safe-area-inset-top,0px) + .9rem) .9rem calc(env(safe-area-inset-bottom,0px) + 1.4rem);
+  }
+  .finale-overlay.show{ opacity:1; pointer-events:auto; }
+  .finale-card{
+    max-width:440px; margin:0 auto; background:#1d0d13; border:1px solid rgba(255,255,255,.08);
+    border-radius:14px; padding:.7rem;
+  }
+  .finale-hero{
+    position:relative; width:100%; height:0; padding-top:62%; border-radius:10px; overflow:hidden;
+    background:radial-gradient(ellipse at 50% 55%,#b02a4a 0%,#6d1330 38%,#2a0714 70%,#12040a 100%);
+  }
+  .finale-hero canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .finale-body{ text-align:center; color:#f6e9ec; padding:1.1rem .5rem .5rem; }
+  .finale-kicker{ font-size:.75rem; letter-spacing:.08em; color:#ff7fa0; }
+  .finale-score{ font-size:1.6rem; font-weight:600; color:#ffc2d1; margin:.55rem 0 .6rem; letter-spacing:.04em; }
+  .finale-title{ font-size:1.2rem; line-height:1.4; margin:0 0 1rem; color:#fff; }
+  .finale-rule{ border:none; border-top:1px solid rgba(255,255,255,.18); margin:0 0 1rem; }
+  .finale-body p{ font-size:.95rem; line-height:1.65; margin:0 0 .9rem; color:#f1dde2; }
+  .finale-body p.finale-strong{ color:#ff8aa8; font-weight:700; }
+  .finale-btn{
+    margin-top:.7rem; width:100%; max-width:300px; background:linear-gradient(90deg,#e0115f,#be1a25);
+    color:#fff; border:none; border-radius:999px; padding:.95rem 2rem; font-size:1.05rem; font-weight:600;
+    cursor:pointer; box-shadow:0 6px 18px rgba(224,17,95,.45);
+  }
+  .finale-btn:active{ transform:scale(.96); }
+
+  /* ---- kapanis dizisi ---- */
+  .outro{
+    position:fixed; inset:0; z-index:30; background:#000; overflow:hidden;
+    opacity:0; pointer-events:none; transition:opacity .8s ease;
+  }
+  .outro.show{ opacity:1; pointer-events:auto; }
+  .outro-pink{
+    position:absolute; inset:0; background:linear-gradient(160deg,#ffc0cb,#ff8fa3);
+    opacity:0; transition:opacity 7s ease-in-out;
+  }
+  .outro-pink.on{ opacity:1; }
+  .outro-msg, .outro-end{
+    position:absolute; left:50%; top:50%; width:min(86vw,360px);
+    transform:translate(-50%,-50%); text-align:center; opacity:0;
+    transition:opacity 1.6s ease; line-height:1.65;
+  }
+  .outro-msg{ font-family:Georgia,'Times New Roman',serif; font-size:1.3rem; }
+  .outro-msg.on, .outro-end.on{ opacity:1; }
+  .outro-msg.light{ color:#fff; }
+  .outro-msg.dark{ color:#5a0a1c; font-size:1.15rem; text-shadow:0 1px 8px rgba(255,255,255,.35); }
+  .outro-end{
+    color:#5a0a1c; font-weight:800; letter-spacing:.14em; font-size:1.2rem; line-height:1.9;
+    text-shadow:0 2px 14px rgba(255,255,255,.5);
+  }
+  .outro-beat{
+    position:absolute; left:50%; top:50%; width:min(80vw,340px);
+    transform:translate(-50%,-50%); text-align:center; opacity:0;
+    transition:opacity 1.4s ease, transform 1.4s ease;
+  }
+  .outro-beat.on{ opacity:1; }
+  .outro-beat.up{ transform:translate(-50%,-50%) translateY(-33vh) scale(.62); }
+  .outro-heart{
+    width:120px; height:120px; display:block; margin:0 auto .3rem;
+    filter:drop-shadow(0 6px 18px rgba(190,26,37,.55));
+    transform-origin:center; animation:nameBeat 2.6s ease-out infinite;
+  }
+
   .secret-overlay{
     position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center;
     justify-content:center; padding:1.2rem; z-index:10; opacity:0; pointer-events:none;
@@ -179,6 +245,38 @@
     </div>
     <canvas id="game" height="420"></canvas>
     <input type="range" id="basketSlider" min="0" max="100" value="50">
+  </div>
+
+  <div id="finaleOverlay" class="finale-overlay" aria-hidden="true">
+    <div class="finale-card">
+      <div class="finale-hero"><canvas id="petalCanvas"></canvas></div>
+      <div class="finale-body">
+        <div class="finale-kicker">✦ GİZLİ BÖLÜM AÇILDI ✦</div>
+        <div class="finale-score">100 / 100</div>
+        <h2 class="finale-title">Bütün kalpler senin için atıyor, Rabiam.</h2>
+        <hr class="finale-rule">
+        <p>Bu oyunda 100 puan kazandın sanıyorsun ama aslında ben kazandım. Çünkü bir gün karşıma sen çıktın ve o günden sonra dünyada hiçbir şey eskisi kadar sıradan kalmadı.</p>
+        <p>Sana verebileceğim en güzel ödül bir hediye, bir çiçek ya da binlerce güzel söz değil. Bunların hepsi bir gün anlamını yitirebilir ama benim sana her gün yeniden âşık oluşumun son seviyesi yok.</p>
+        <p class="finale-strong">Sen benim en güzel tesadüfüm değil, hayatımda iyi ki dediğim en güzel gerçeğimsin.</p>
+        <button id="finaleContinue" class="finale-btn">Devam et</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="outro" class="outro" aria-hidden="true">
+    <div id="outroPink" class="outro-pink"></div>
+    <div id="outroBeat" class="outro-beat">
+      <svg class="outro-heart" viewBox="-12 -3 24 25" aria-hidden="true">
+        <defs><linearGradient id="outroHeartGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6b89"/><stop offset="1" stop-color="#be1a25"/></linearGradient></defs>
+        <path d="M0,4 C0,-4 -10,-4 -10,4 C-10,12 0,16 0,20 C0,16 10,12 10,4 C10,-4 0,-4 0,4 Z" fill="url(#outroHeartGrad)"/>
+      </svg>
+      <svg class="ecg" viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true">
+        <path class="ecg-base" pathLength="600" d="M0,48 L40,48 L50,48 L56,40 L62,48 L80,48 L86,54 L92,8 L98,72 L104,48 L130,48 L138,38 L148,48 L200,48 L240,48 L250,48 L256,40 L262,48 L280,48 L286,54 L292,8 L298,72 L304,48 L330,48 L338,38 L348,48 L400,48"/>
+        <path class="ecg-glow" pathLength="600" d="M0,48 L40,48 L50,48 L56,40 L62,48 L80,48 L86,54 L92,8 L98,72 L104,48 L130,48 L138,38 L148,48 L200,48 L240,48 L250,48 L256,40 L262,48 L280,48 L286,54 L292,8 L298,72 L304,48 L330,48 L338,38 L348,48 L400,48"/>
+      </svg>
+    </div>
+    <div id="outroMsg" class="outro-msg"></div>
+    <div id="outroEnd" class="outro-end">GAME COMPLETED ❤️ BUT MY LOVE FOR YOU IS ENDLESS.</div>
   </div>
 
   <div id="secretOverlay" class="secret-overlay">
@@ -349,14 +447,15 @@ const secretTiers = [
   { score: 10, message: "Buraya kadar oynadığına göre bil ki seni dünyalar kadar seviyorum 💖" },
   { score: 20, message: "Bu skora ulaştın demek ki inatçısın tıpkı benim seni sevmekten vazgeçmediğim gibi 💘" },
   { score: 30, message: "Sana gizli bir sır her gün biraz daha çok seviyorum seni 🤫💗" },
-  { score: 50, message: "Seni İkizler'de beklediğim o günkü hislerim hâlâ aklımda kalbimin atışı o kadar hızlıydı ki sanki yerinden çıkacaktı bir de seni çok uzaktan gördüğüm o an nerede duracağımı şaşırmıştım hislerim her geçen gün katlanarak artıyor 💓" }
+  { score: 50, message: "Seni İkizler'de beklediğim o günkü hislerim hâlâ aklımda kalbimin atışı o kadar hızlıydı ki sanki yerinden çıkacaktı bir de seni çok uzaktan gördüğüm o an nerede duracağımı şaşırmıştım hislerim her geçen gün katlanarak artıyor 💓" },
+  { score: 100, finale: true, message: "" }
 ];
 let unlockedTiers = new Set();
 function checkSecretTiers(){
   for(const tier of secretTiers){
     if(score >= tier.score && !unlockedTiers.has(tier.score)){
       unlockedTiers.add(tier.score);
-      showSecret(tier.message);
+      if(tier.finale){ showFinale(); } else { showSecret(tier.message); }
       break;
     }
   }
@@ -556,6 +655,7 @@ function drawBackground(){
 
 function update(){
   if(!running) return;
+  if(paused){ requestAnimationFrame(update); return; }
   drawBackground();
 
   spawnTimer++;
@@ -600,6 +700,199 @@ function moveBasket(clientX){
   basketX = Math.max(22, Math.min(canvas.width-22, clientX - rect.left));
 }
 canvas.addEventListener('mousemove', e => moveBasket(e.clientX));
+
+// ---------- 100 Puan Finali ----------
+let paused = false;
+const finale = {
+  el: document.getElementById('finaleOverlay'),
+  cvs: document.getElementById('petalCanvas'),
+  ctx: null, petals: [], bokeh: [], raf: 0, running: false, last: 0, w: 0, h: 0, dpr: 1
+};
+const PETAL_COLORS = ['#c1121f','#9d0208','#e63950','#ff4d6d','#7a0c1a','#d90429','#a4133c'];
+
+function finaleResize(){
+  const r = finale.cvs.getBoundingClientRect();
+  finale.dpr = Math.min(window.devicePixelRatio || 1, 2);
+  finale.w = finale.cvs.width = Math.max(1, Math.round(r.width * finale.dpr));
+  finale.h = finale.cvs.height = Math.max(1, Math.round(r.height * finale.dpr));
+}
+function makePetal(initial){
+  const d = Math.random();            // 0 uzak ... 1 yakın
+  const k = finale.dpr;
+  const size = (6 + d * 20) * k;
+  return {
+    heart: Math.random() < 0.35,
+    x: Math.random() * finale.w,
+    y: initial ? Math.random() * finale.h : -size * 2,
+    size: size,
+    vy: (0.35 + d * 0.9) * k,
+    vx: (Math.random() - 0.3) * 0.4 * k,
+    sway: (0.3 + Math.random() * 0.9) * k,
+    swayF: 0.01 + Math.random() * 0.02,
+    phase: Math.random() * 6.28,
+    rot: Math.random() * 6.28,
+    spin: (Math.random() - 0.5) * 0.04,
+    flip: Math.random() * 6.28,
+    flipV: 0.02 + Math.random() * 0.05,
+    alpha: 0.45 + d * 0.5,
+    glow: d * 10 * k,
+    color: PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)]
+  };
+}
+function makeBokeh(){
+  const k = finale.dpr;
+  return {
+    x: Math.random() * finale.w, y: Math.random() * finale.h,
+    r: (18 + Math.random() * 40) * k,
+    vx: (Math.random() - 0.5) * 0.15 * k, vy: (Math.random() - 0.5) * 0.15 * k,
+    a: 0.05 + Math.random() * 0.08
+  };
+}
+function drawPetal(p){
+  const c = finale.ctx;
+  c.save();
+  c.translate(p.x + Math.sin(p.phase) * p.sway * 12, p.y);
+  c.rotate(p.rot);
+  c.scale(Math.cos(p.flip), 1);
+  c.globalAlpha = p.alpha;
+  c.fillStyle = p.color;
+  c.shadowColor = p.color;
+  c.shadowBlur = p.glow;
+  c.beginPath();
+  if(p.heart){
+    const k = p.size / 10;
+    c.scale(k, k);
+    c.translate(0, -9);
+    c.moveTo(0,4);
+    c.bezierCurveTo(0,-4,-10,-4,-10,4);
+    c.bezierCurveTo(-10,12,0,16,0,20);
+    c.bezierCurveTo(0,16,10,12,10,4);
+    c.bezierCurveTo(10,-4,0,-4,0,4);
+  } else {
+    const s = p.size;
+    c.moveTo(0,-s);
+    c.bezierCurveTo(s,-s*0.7,s*0.9,s*0.8,0,s);
+    c.bezierCurveTo(-s*0.9,s*0.8,-s,-s*0.7,0,-s);
+  }
+  c.closePath();
+  c.fill();
+  c.restore();
+}
+function finaleFrame(now){
+  if(!finale.running) return;
+  const dt = Math.min(3, Math.max(0.2, (now - finale.last) / 16.67));
+  finale.last = now;
+  const c = finale.ctx, w = finale.w, h = finale.h;
+  c.clearRect(0, 0, w, h);
+  for(const b of finale.bokeh){
+    b.x += b.vx * dt; b.y += b.vy * dt;
+    if(b.x < -b.r) b.x = w + b.r;
+    if(b.x > w + b.r) b.x = -b.r;
+    if(b.y < -b.r) b.y = h + b.r;
+    if(b.y > h + b.r) b.y = -b.r;
+    const g = c.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+    g.addColorStop(0, 'rgba(255,110,140,' + b.a + ')');
+    g.addColorStop(1, 'rgba(255,110,140,0)');
+    c.fillStyle = g;
+    c.beginPath();
+    c.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    c.fill();
+  }
+  for(const p of finale.petals){
+    p.y += p.vy * dt;
+    p.x += p.vx * dt;
+    p.phase += p.swayF * dt;
+    p.rot += p.spin * dt;
+    p.flip += p.flipV * dt;
+    if(p.y > h + p.size * 2 || p.x < -p.size * 3 || p.x > w + p.size * 3){
+      Object.assign(p, makePetal(false));
+    }
+    drawPetal(p);
+  }
+  finale.raf = requestAnimationFrame(finaleFrame);
+}
+function showFinale(){
+  paused = true;
+  finale.ctx = finale.cvs.getContext('2d');
+  finale.el.classList.add('show');
+  finale.el.setAttribute('aria-hidden', 'false');
+  finale.el.scrollTop = 0;
+  finaleResize();
+  finale.petals = [];
+  for(let i = 0; i < 30; i++) finale.petals.push(makePetal(true));
+  finale.petals.sort(function(a, b){ return a.size - b.size; });
+  finale.bokeh = [];
+  for(let i = 0; i < 7; i++) finale.bokeh.push(makeBokeh());
+  finale.running = true;
+  finale.last = performance.now();
+  cancelAnimationFrame(finale.raf);
+  finale.raf = requestAnimationFrame(finaleFrame);
+  playTone(523, 0.18, 'sine', 0.12);
+  setTimeout(function(){ playTone(659, 0.18, 'sine', 0.11); }, 140);
+  setTimeout(function(){ playTone(784, 0.3, 'sine', 0.1); }, 280);
+}
+function hideFinale(){
+  finale.running = false;
+  cancelAnimationFrame(finale.raf);
+  finale.el.classList.remove('show');
+  finale.el.setAttribute('aria-hidden', 'true');
+  paused = false;
+}
+document.getElementById('finaleContinue').addEventListener('click', function(){
+  // Devam et: kapanis dizisini baslatir
+  startOutro();
+});
+// ---------- Kapanis (Devam et'ten sonra) ----------
+const outroSleep = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+async function startOutro(){
+  if(startOutro.started) return;
+  startOutro.started = true;
+  const o = document.getElementById('outro');
+  const msg = document.getElementById('outroMsg');
+  const beat = document.getElementById('outroBeat');
+  const pink = document.getElementById('outroPink');
+  const end = document.getElementById('outroEnd');
+
+  async function say(text, cls, hold){
+    msg.className = 'outro-msg ' + cls;
+    msg.textContent = text;
+    void msg.offsetWidth;
+    msg.classList.add('on');
+    await outroSleep(1600 + hold);
+    msg.classList.remove('on');
+    await outroSleep(1700);
+  }
+
+  // 1) ekran kararir, petal ve kalp efektleri durur
+  finale.running = false;
+  cancelAnimationFrame(finale.raf);
+  o.classList.add('show');
+  await outroSleep(900);
+  finale.el.classList.remove('show');
+  document.getElementById('bgHearts').style.display = 'none';
+  await outroSleep(1200);
+
+  // 2) iki cumle
+  await say('Tebrikler Rabia. Oyunu bitirdin sanıyorsun…', 'light', 2800);
+  await say('Ama sana olan sevgimin son seviyesi henüz keşfedilmedi.', 'light', 3400);
+
+  // 3) kalp atisi baslar, arka plan yavasca pembelesir
+  beat.classList.add('on');
+  pink.classList.add('on');
+  await outroSleep(7500);
+
+  // 4) son mesaj (kalp atisi yukari cikar)
+  beat.classList.add('up');
+  await outroSleep(1500);
+  await say('100 puanlık oyunumun ödülü sensin. Keşke kendimi senin gözlerinden görebilseydim de neden dünyadaki bütün güzel şeylerden daha çok sevildiğini sana gösterebilseydim.', 'dark', 8500);
+
+  // 5) ekranda sadece son yazi
+  beat.classList.remove('on');
+  await outroSleep(1600);
+  end.classList.add('on');
+}
+window.addEventListener('resize', function(){ if(finale.running) finaleResize(); });
+if(location.hash === '#finale'){ setTimeout(showFinale, 400); }
 
 document.getElementById('secretClose').addEventListener('click', () => {
   document.getElementById('secretOverlay').classList.remove('show');
