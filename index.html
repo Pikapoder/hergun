@@ -892,7 +892,13 @@ async function startOutro(){
   end.classList.add('on');
 }
 window.addEventListener('resize', function(){ if(finale.running) finaleResize(); });
-if(location.hash === '#finale'){ setTimeout(showFinale, 400); }
+function maybeShowFinaleFromUrl(){
+  if((location.hash === '#finale' || /[?&]finale(=|&|$)/.test(location.search)) && !finale.running){
+    setTimeout(showFinale, 400);
+  }
+}
+maybeShowFinaleFromUrl();
+window.addEventListener('hashchange', maybeShowFinaleFromUrl);
 
 document.getElementById('secretClose').addEventListener('click', () => {
   document.getElementById('secretOverlay').classList.remove('show');
